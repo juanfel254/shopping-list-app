@@ -21,6 +21,7 @@
               type="text"
               placeholder="Add an item"
             />
+            <p>{{ characterCount }} / {{ characterLimitComp }}</p>
             <input
               class="border border-black rounded-md w-full p-1"
               v-model="newAmount"
@@ -54,17 +55,36 @@
         </div>
       </div>
 
+      <div class="flex flex-col w-28">
+        <button
+          v-bind="filterReverse"
+          class="flex items-center justify-center gap-2 bg-cyan-100 p-1 text-sm rounded-md border border-solid border-black font-normal transition hover:bg-cyan-200"
+          @click="applyFilter"
+        >
+          {{ !filterReverse ? 'Reverse' : 'Unreverse' }}
+          <ArrowUpDown :size="20" :stroke-width="1" />
+        </button>
+      </div>
+
       <ul
         v-if="itemsArr && itemsArr.length > 0"
         class="shopping-list flex flex-col bg-blue-300 rounded-2xl p-3 gap-3 w-full border border-black max-w-screen-sm min-w-200 shadow-lg"
       >
         <li
-          class="item p-1 border-black border border-solid rounded-md flex flex-row justify-between bg-white items-center transition"
-          v-for="({ id, name, amount, highPriority }, index) in itemsArr"
-          :key="id"
+          class="item p-1 border-black border border-solid rounded-md flex flex-row justify-between bg-white items-center transition hover:scale-105 cursor-pointer"
+          v-for="(item, index) in !filterReverse ? itemsArr : reversedItems"
+          :key="item.id"
+          @click="togglePurchase(item)"
         >
-          <p class="font-semibold">
-            {{ id }}. {{ name }}: {{ amount }} {{ highPriority ? ' - High Priority🚩' : '' }}
+          <p
+            :class="{
+              'line-through text-gray-400': item.purchased,
+              'text-red-500': item.highPriority,
+              'text-red-300': item.highPriority && item.purchased
+            }"
+            class="font-semibold pl-1"
+          >
+            {{ item.name }}: {{ item.amount }} {{ item.highPriority ? '' : '' }}
           </p>
           <button class="bg-white cursor-pointer rounded-md transition" @click="removeItem(index)">
             <Trash2
@@ -86,21 +106,36 @@
 </template>
 
 <script setup>
-import { Trash2 } from 'lucide-vue-next'
+import { ArrowUpDown, Trash2 } from 'lucide-vue-next'
 import { ref, computed } from 'vue'
 
 const header = ref('Shopping List App')
 const itemsArr = ref([
-  { id: 1, name: 'Party hats', amount: 10, highPriority: false },
-  { id: 2, name: 'Board games', amount: 2, highPriority: false },
-  { id: 3, name: 'Cups', amount: 20, highPriority: false }
+  { id: 1, name: 'Party hats', amount: 10, highPriority: false, purchased: true },
+  { id: 2, name: 'Board games', amount: 2, highPriority: false, purchased: true },
+  { id: 3, name: 'Cups', amount: 20, highPriority: true, purchased: false }
 ])
 
+// Error msg and toogle form
 const msg = ref('Anything else?')
 const showForm = ref(false)
-const newItem = ref(null)
+
+// Inputs
+const newItem = ref('')
 const newAmount = ref(null)
 const newHighPriority = ref(false)
+
+// Characters handling
+const characterCount = computed(() => newItem.value.length)
+const characterLimit = ref(50)
+const characterLimitComp = computed(() => characterLimit.value)
+
+// Inverse list of items
+const filterReverse = ref(false)
+const applyFilter = () => {
+  filterReverse.value = !filterReverse.value
+}
+const reversedItems = computed(() => [...itemsArr.value].reverse())
 
 const displayForm = () => {
   showForm.value = !showForm.value
@@ -114,15 +149,20 @@ const addItem = () => {
     highPriority: newHighPriority.value
   })
   // Reset form fields
-  newItem.value = null
+  newItem.value = ''
   newAmount.value = null
   newHighPriority.value = false
+  characterCount.value = 0
   msg.value = 'Item added. Anything else?'
 }
 
 const removeItem = (index) => {
   itemsArr.value.splice(index, 1)
   msg.value = 'Item removed'
+}
+
+const togglePurchase = (item) => {
+  item.purchased = !item.purchased
 }
 
 const secondaryContainer = computed(() => ({
