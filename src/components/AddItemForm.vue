@@ -8,7 +8,6 @@ const props = defineProps({
 const showForm = ref(false)
 
 const displayForm = () => {
-  console.log('siu')
   showForm.value = !showForm.value
 }
 
@@ -25,7 +24,6 @@ const newItem = ref({
 
 const addItem = () => {
   emits('addItemToList', { ...newItem.value })
-  console.log('Item added:', newItem.value)
   // Reset form fields
   newItem.value = {
     id: 0,
