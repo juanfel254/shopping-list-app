@@ -1,12 +1,12 @@
 <script setup>
-import ShoppinList from './components/ShoppinList.vue'
+import ShoppingList from './components/ShoppingList.vue'
 </script>
 
 <template>
   <header></header>
 
   <main>
-    <ShoppinList />
+    <ShoppingList />
   </main>
 </template>
 
